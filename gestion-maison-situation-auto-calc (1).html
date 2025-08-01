@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestion Maison</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #eef3f9; }
+    .tabs { display: flex; margin: 20px 10px 0; gap: 10px; }
+    .tab {
+      background: #aaa;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 8px 8px 0 0;
+      font-weight: bold;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tab.active { background: #3498db; }
+    .onglet {
+      display: none;
+      max-width: 540px;
+      margin: auto;
+      background: white;
+      padding: 20px 8px;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 0 5px #bbb;
+    }
+    .onglet.active { display: block; }
+    h3 { margin: 10px 0 14px; }
+    button, .btn, select.styled-select {
+      font-family: inherit;
+      font-size: 15px;
+      border: none;
+      border-radius: 23px;
+      padding: 9px 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, color 0.15s;
+      margin: 6px 5px 12px 0;
+      box-shadow: 0 1px 4px #b4cdf7;
+      outline: none;
+    }
+    #checklists,
+    .styled-select {
+      background: linear-gradient(90deg, #3498db 60%, #2173b7);
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 23px;
+      padding: 9px 18px;
+      margin: 6px 5px 12px 0;
+      box-shadow: 0 1px 4px #b4cdf7;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      min-width: 120px;
+      text-align-last: center;
+      text-align: center;
+      outline: none;
+      cursor: pointer;
+      line-height: 1.2;
+    }
+    #checklists:focus,
+    .styled-select:focus {
+      outline: 2px solid #2173b7;
+    }
+    #editControls button,
+    #newChecklistBtn,
+    #editModeBtn,
+    #uncheckAllBtn {
+      background: linear-gradient(90deg, #3498db 60%, #2173b7);
+      color: #fff;
+    }
+    .save-depense, .save-wish { background: #1e6fb8; color: #fff; }
+    .save-depense:hover, .save-wish:hover { background: #15579b;}
+    .ajout-depense, .ajout-wish { background: #4b9d30; color: #fff; }
+    .ajout-depense:hover, .ajout-wish:hover { background: #37951a; }
+    .btnAddEpargne {
+      background: linear-gradient(90deg, #21d977 60%, #178b3a 100%);
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 25px;
+      padding: 10px 22px;
+      margin: 0 0 16px 0;
+      box-shadow: 0 2px 8px #bff7cb33;
+      cursor: pointer;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .btnAddEpargne::before {
+      content: '+';
+      display: inline-block;
+      width: 22px; height: 22px;
+      background: #fff;
+      color: #21d977;
+      border-radius: 50%;
+      margin-right: 8px;
+      font-size: 21px;
+      text-align: center;
+      line-height: 22px;
+      font-weight: bold;
+      border: 2.2px solid #21d977;
+      box-shadow: 0 1px 4px #bff7cb44;
+    }
+    .btnAddEpargne:hover { background: linear-gradient(90deg, #178b3a 60%, #21d977 100%); }
+    .budgetBtn {
+      background: linear-gradient(90deg, #3498db 65%, #2173b7 100%);
+      color: #fff;
+      border-radius: 19px;
+      font-size: 1em;
+      padding: 10px 25px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+    .budgetBtn.active, .budgetBtn:active {
+      background: linear-gradient(90deg, #2173b7 65%, #3498db 100%);
+      color: #fff;
+    }
+    .budgetBtn:hover { filter: brightness(1.12); color: #e4f1fa; }
+    .sectionBtn {
+      background: linear-gradient(90deg, #e0eafc 40%, #cfdef3 90%);
+      color: #145390;
+      border-radius: 18px;
+      margin: 3px 1.5px;
+      font-weight: 600;
+      font-size: 0.99em;
+      cursor: pointer;
+      box-shadow: 0 1px 3px #d0ddf8;
+    }
+    .sectionBtn.active, .sectionBtn:active {
+      background: linear-gradient(90deg, #3498db 60%, #2173b7 100%);
+      color: #fff;
+    }
+    .budgetFieldsWrap { background: linear-gradient(90deg, #f5faff, #e8f3ff); border-radius: 10px; box-shadow: 0 1px 5px #ccc; display: flex; flex-direction: column; gap: 10px; margin-top: 16px; padding: 10px 8px 12px; }
+    .budgetFieldRow { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+    .budgetFieldRow label {
+      flex-shrink: 0;
+      flex-grow: 0;
+      min-width: 110px;
+      max-width: 180px;
+      font-weight: 600;
+      font-size: 1em;
+      color: #145390;
+      margin-right: 7px;
+    }
+    .budgetFieldRow input[type="number"], .budgetFieldRow input[type="text"] {
+      flex: 0 0 110px;
+      max-width: 140px;
+      min-width: 65px;
+      font-size: 1.07em;
+      font-weight: 500;
+      text-align: right;
+      border: 1.2px solid #3498db;
+      border-radius: 6px;
+      background: #fafdff;
+      box-sizing: border-box;
+      padding: 7px 11px;
+      margin-left: auto;
+      transition: box-shadow 0.15s, background 0.15s, color 0.15s;
+      display: inline-block;
+    }
+    .budgetFieldRow input[readonly] {
+      background: #e9fbe3;
+      color: #21854a;
+      border: 2px solid #40c97b;
+      font-weight: bold;
+    }
+    .budgetFieldRow input.auto-calc {
+      background: #fafdff !important;
+      color: #3498db !important;
+      border: 1.2px solid #3498db !important;
+      font-weight: bold;
+    }
+    .budgetFieldRow input.frais-positif { color: #178b3a !important; background: #e6faea !important; border-color: #21d977 !important;}
+    .budgetFieldRow input.frais-negatif { color: #cc123b !important; background: #fbecef !important; border-color: #e74c3c !important;}
+    .budgetFieldRow span {
+      color: #145390;
+      font-weight: bold;
+      font-size: 1em;
+      margin-left: 5px;
+      display: inline-block;
+      white-space: pre;
+    }
+    .budgetFieldRow input.nom-epargne { flex: 1; font-weight: 600; color: #145390; min-width: 35px; max-width: 180px; }
+    .budgetFieldRow input.montant-epargne { width: 110px; min-width: 74px; font-weight: bold; margin-left: auto;}
+    .epargne-ligne { display: flex; gap: 10px; align-items: center; }
+    .epargne-ligne button.supprimer-epargne { background: none; border: none; color: red; font-weight: bold; font-size: 20px; cursor: pointer; padding: 0;}
+    .table-scroll-x { width: 100%; overflow-x: auto; }
+    .table-scroll-x .depenseTable { min-width: 540px; }
+    .depenseTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      table-layout: fixed;
+      background: #fff;
+    }
+    .depenseTable th, .depenseTable td {
+      border: 1px solid #d4e3fc;
+      padding: 0;
+      vertical-align: middle;
+      text-align: center;
+      background: #fff;
+      position: relative;
+      height: 48px;
+    }
+    .depenseTable th {
+      background-color: #d4e3fc;
+      color: #145390;
+      font-size: 0.97em;
+      font-weight: bold;
+      padding: 10px 2px;
+    }
+    .depenseTable th, .depenseTable td { min-width: 46px; }
+    .depenseTable th:first-child, .depenseTable td:first-child {
+      width: 38px; min-width: 28px; max-width: 44px;
+      text-align: center;
+      padding: 0;
+    }
+    .depenseTable th:nth-child(2), .depenseTable td:nth-child(2) {
+      width: 54px; min-width: 36px; max-width: 70px; text-align: center;
+      padding: 0;
+    }
+    .depenseTable th:nth-child(3), .depenseTable td:nth-child(3) {
+      width: 85px; min-width: 54px; max-width: 100px; text-align: right;
+      padding: 0;
+    }
+    .depenseTable th:nth-child(4), .depenseTable td:nth-child(4) {
+      width: auto; min-width: 80px; max-width: 180px; text-align: left;
+      padding: 0;
+    }
+    .depenseTable input[type="checkbox"] { transform: scale(1.13); cursor: pointer; margin: 0 auto; display: block;}
+    .depenseTable select {
+      width: 90%;
+      max-width: 58px;
+      min-width: 34px;
+      padding: 4px 5px;
+      border-radius: 7px;
+      border: 1.5px solid #b5d5f9;
+      background: #fcfdff;
+      font-size: 1em;
+      margin: 6px 0;
+      display: block;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .depenseTable input.montant, .depenseTable input.wish-montant {
+      width: 94%;
+      min-width: 48px;
+      max-width: 110px;
+      text-align: right;
+      font-size: 1em;
+      font-weight: normal;
+      background: #fafdff;
+      border-radius: 7px;
+      border: 1.5px solid #b5d5f9;
+      margin: 6px 0;
+      padding: 8px 7px;
+      box-sizing: border-box;
+      display: block;
+    }
+    .depenseTable input[type="text"], .depenseTable input.wish-descr, .depenseTable input.wish-domaine {
+      width: 94%;
+      min-width: 48px;
+      max-width: 100%;
+      font-size: 1em;
+      background: #fcfdff;
+      border-radius: 7px;
+      border: 1.5px solid #b5d5f9;
+      margin: 6px 0;
+      padding: 8px 7px;
+      box-sizing: border-box;
+      display: block;
+      text-align: left;
+    }
+    .depenseTable th.wish-checkbox, .depenseTable td.wish-checkbox,
+    .depenseTable th.wish-mois, .depenseTable td.wish-mois,
+    .depenseTable th.wish-montant, .depenseTable td.wish-montant,
+    .depenseTable th.wish-descr, .depenseTable td.wish-descr,
+    .depenseTable th.wish-domaine, .depenseTable td.wish-domaine {
+      padding: 0;
+      text-align: center;
+    }
+    #checklist {
+      max-width: 520px;
+      margin: 12px auto 24px;
+      padding: 0;
+      list-style: none;
+    }
+    #checklist li {
+      display: flex;
+      align-items: center;
+      background: #f9fbff;
+      border: 1.6px solid #bed6f7;
+      border-radius: 14px;
+      padding: 12px 18px;
+      margin-bottom: 11px;
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.08), 0 1px 5px rgba(0, 75, 150, 0.07);
+      min-height: 42px;
+    }
+    #checklist li .custom-checkbox {
+      position: relative;
+      width: 28px; height: 28px;
+      margin-right: 18px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #checklist li .custom-checkbox input[type="checkbox"] {
+      opacity: 0; width: 28px; height: 28px; margin: 0; z-index: 2; position: absolute; left: 0; top: 0; cursor: pointer;
+    }
+    #checklist li .checkmark {
+      display: inline-block;
+      width: 22px; height: 22px;
+      border-radius: 7px;
+      background: linear-gradient(120deg, #f6fbff 70%, #dae9fd 100%);
+      border: 2.2px solid #3498db;
+      box-shadow: 0 1.5px 7px #b3dafe33;
+      position: relative;
+      transition: border-color 0.14s, background 0.16s;
+    }
+    #checklist li .custom-checkbox input[type="checkbox"]:checked + .checkmark {
+      background: linear-gradient(120deg, #3498db 65%, #2173b7 100%);
+      border-color: #2173b7;
+    }
+    #checklist li .checkmark:after {
+      left: 5px; top: 2px; width: 7px; height: 13px; border: solid #fff; border-width: 0 3px 3px 0; border-radius: 2px;
+      transform: rotate(45deg);
+      content: "";
+    }
+    #checklist li .custom-checkbox input[type="checkbox"]:checked + .checkmark:after {
+      display: block;
+    }
+    #checklist li span {
+      flex: 1 1 auto;
+      font-size: 1.09em;
+      color: #16447b;
+      white-space: normal;
+      line-height: 1.28;
+      user-select: text;
+      transition: color 0.18s ease;
+      padding-right: 11px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    #checklist li input[type="checkbox"]:checked ~ span {
+      text-decoration: line-through;
+      color: #8ea6c1;
+      opacity: 0.75;
+      font-weight: 400;
+    }
+    #checklist li button {
+      flex-shrink: 0;
+      background: #e94560;
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      font-size: 1.25em;
+      font-weight: bold;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 1.5px 8px #e9456040;
+      transition: background-color 0.18s, box-shadow 0.18s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      line-height: 1;
+      padding: 0;
+      margin-left: 10px;
+      user-select: none;
+    }
+    #checklist li button:hover {
+      background-color: #cc2845;
+      box-shadow: 0 2px 13px #cc2845cc;
+    }
+    #notes { width: 100%; min-height: 140px; margin-top: 12px; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; resize: vertical; font-family: inherit; }
+    #resetLists {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(120deg, #ff4343 75%, #cf0f0f 100%);
+      color: #fff;
+      font-size: 1.7em;
+      border: none;
+      box-shadow: 0 3px 20px #fa7877d6, 0 1px 12px #f4d0d0a2;
+      z-index: 123;
+      cursor: pointer;
+      display: none;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    #resetLists.ongletCheckVisible { display: block; }
+    #resetLists:hover {
+      background: linear-gradient(120deg, #e02424 75%, #af0101 100%);
+      color: #fff;
+      box-shadow: 0 2px 9px #e66969, 0 1px 4px #e4c3c3;
+    }
+    @media (max-width: 650px) {
+      .onglet {padding: 6px;}
+      .table-scroll-x { overflow-x: auto;}
+      .depenseTable th, .depenseTable td { font-size: 0.98em; }
+      .depenseTable input[type="text"], .depenseTable input[type="number"] { font-size: 1em;}
+      .depenseTable th, .depenseTable td { min-width: 38px; }
+      .depenseTable input, .depenseTable select { height: 38px; min-height: 34px;}
+    }
+    @media (max-width: 520px) {
+      .depenseTable th, .depenseTable td { min-width: 34px; }
+    }
+    @media (max-width: 450px) {
+      .depenseTable th, .depenseTable td { min-width: 28px; }
+      .depenseTable input, .depenseTable select { padding-left: 3px; padding-right: 3px;}
+    }
+    @media (max-width: 420px) {
+      .depenseTable th, .depenseTable td { min-width: 22px; }
+      .depenseTable input, .depenseTable select { font-size: 0.93em;}
+      .depenseTable input, .depenseTable select { padding-left: 2px; padding-right: 2px;}
+    }
+    @media (max-width: 480px) {
+      .budgetFieldRow { flex-wrap: wrap; justify-content: flex-start;}
+      .budgetFieldRow label, .budgetFieldRow input { width: 100%; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab(0)">✅ Check-list</div>
+    <div class="tab" onclick="showTab(1)">💰 Budget</div>
+    <div class="tab" onclick="showTab(2)">📝 Notes</div>
+  </div>
+  <div class="onglet active" id="onglet-check">
+    <h3>Mes check-lists</h3>
+    <select id="checklists" class="styled-select"></select>
+    <button id="editModeBtn">Mode édition</button>
+    <button id="uncheckAllBtn">Tout décocher</button>
+    <div id="editControls" style="display:none">
+      <button id="addItemBtn">+ Ajouter</button>
+      <button id="removeListBtn" style="color:red;">🗑 Supprimer liste</button>
+    </div>
+    <button id="newChecklistBtn">+ Nouvelle check-list</button>
+    <ul id="checklist"></ul>
+  </div>
+  <div class="onglet" id="onglet-budget">
+    <div style="margin-bottom:10px">
+      <button id="btnJRI" class="budgetBtn active">JRI</button>
+      <button id="btnARI" class="budgetBtn">ARI</button>
+    </div>
+    <div id="budgetSectionJRI">
+      <div class="sectionBtns">
+        <button class="sectionBtn active" id="jriSituBtn">Situation Fin.</button>
+        <button class="sectionBtn" id="jriEncoursBtn">En cours</button>
+        <button class="sectionBtn" id="jriEpargneBtn">Épargne</button>
+        <button class="sectionBtn" id="jriWishBtn">Wish list</button>
+      </div>
+      <div id="jriContent"></div>
+    </div>
+    <div id="budgetSectionARI" style="display:none">
+      <div class="sectionBtns">
+        <button class="sectionBtn active" id="ariSituBtn">Situation Fin.</button>
+        <button class="sectionBtn" id="ariEncoursBtn">En cours</button>
+        <button class="sectionBtn" id="ariEpargneBtn">Épargne</button>
+        <button class="sectionBtn" id="ariWishBtn">Wish list</button>
+      </div>
+      <div id="ariContent"></div>
+    </div>
+  </div>
+  <div class="onglet" id="onglet-notes">
+    <h3>Bloc-notes</h3>
+    <textarea id="notes" placeholder="Écris ici…"></textarea>
+  </div>
+  <button id="resetLists" title="Réinitialiser les listes">R</button>
+  <script>
+    // Onglets
+    function showTab(i) {
+      document.querySelectorAll(".tab").forEach((tab, idx) => tab.classList.toggle("active", idx === i));
+      document.querySelectorAll(".onglet").forEach((ong, idx) => ong.classList.toggle("active", idx === i));
+      const resetBtn = document.getElementById("resetLists");
+      resetBtn.style.display = i === 0 ? "block" : "none";
+      resetBtn.classList.toggle("ongletCheckVisible", i === 0);
+    }
+    // Check-list logic
+    const DEFAULT_LISTES = {
+      "Voyage": [
+        "Passeport", "Réservation dodo", "Réservation Train / avion",
+        "Réservation Véhicule", "Multiprise / Adaptateur international", "Chargeur téléphone",
+        "Bouchons et masques nuit", "Kit médical", "Trousse de toilette", "Photo / vidéos"
+      ],
+      "Escapade": [
+        "Réservation dodo", "Réservation activité", "Parking", "Multiprise", "Chargeur téléphone",
+        "Bouchons et masques nuit", "Kit médical", "Trousse de toilette", "Veste / Coupe-vent (si météo)",
+        "Crème solaire (si météo)", "Lunettes soleil (si météo)", "Casquette/ chapeau (si météo)",
+        "Photo / vidéos"
+      ],
+      "Randonnée": [
+        "Eau", "Batterie externe", "Chargeur téléphone", "Casse-croute / En-cas",
+        "Carte / Plan / Parcours", "Veste / coupe-vent (si météo)", "Photo / Vidéo"
+      ],
+      "Tyl'in": [
+        "** Tablette **", "** Guitare **", "** Tenue - Chaussures **", "** Tenue - Chapeaux **",
+        "** Tenue - Chaussettes **", "** Tenue - Chemises - pantalon **", "** Tapis Tyl Box **",
+        "** Tyl Box **", "** Table Mixage **", "** Sono **", "** Tabouret **", "Case divers",
+        "Sac caisse", "Guitare secours"
+      ]
+    };
+    let listes = JSON.parse(localStorage.getItem("checklists") || "{}");
+    if (!listes || Object.keys(listes).length === 0) {
+      listes = {};
+      for (const nom in DEFAULT_LISTES) {
+        listes[nom] = DEFAULT_LISTES[nom].map(txt => ({ text: txt, checked: false }));
+      }
+      localStorage.setItem("checklists", JSON.stringify(listes));
+    }
+    let currentNom = Object.keys(listes)[0] || "";
+    let editMode = false;
+    function saveChecklists() {
+      localStorage.setItem("checklists", JSON.stringify(listes));
+    }
+    function afficherListe(nom) {
+      if (!nom) return;
+      currentNom = nom;
+      const select = document.getElementById("checklists");
+      select.innerHTML = "";
+      Object.keys(listes).forEach(n => {
+        const opt = new Option(n, n);
+        select.appendChild(opt);
+      });
+      select.value = nom;
+      const ul = document.getElementById("checklist");
+      ul.innerHTML = "";
+      listes[nom].forEach((item, i) => {
+        const li = document.createElement("li");
+        // Custom checkbox
+        const cbWrap = document.createElement("label");
+        cbWrap.className = "custom-checkbox";
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = item.checked || false;
+        cb.disabled = editMode;
+        cb.oninput = () => { listes[nom][i].checked = cb.checked; saveChecklists(); afficherListe(nom); };
+        const checkmark = document.createElement("span");
+        checkmark.className = "checkmark";
+        cbWrap.appendChild(cb);
+        cbWrap.appendChild(checkmark);
+        li.appendChild(cbWrap);
+        const span = document.createElement("span");
+        span.innerHTML = item.text.match(/^\*\*(.+?)\*\*$/) ? `<b>${item.text.replace(/\*\*/g, "").trim()}</b>` : item.text;
+        li.appendChild(span);
+        if (editMode) {
+          const btn = document.createElement("button");
+          btn.textContent = "✖";
+          btn.title = "Supprimer cet item";
+          btn.onclick = () => {
+            listes[nom].splice(i, 1);
+            saveChecklists();
+            afficherListe(nom);
+          };
+          li.appendChild(btn);
+        }
+        ul.appendChild(li);
+      });
+      document.getElementById("editControls").style.display = editMode ? "block" : "none";
+      document.getElementById("removeListBtn").style.display = DEFAULT_LISTES[currentNom] ? "none" : "inline-block";
+    }
+    document.getElementById("checklists").onchange = e => afficherListe(e.target.value);
+    document.getElementById("editModeBtn").onclick = () => {
+      editMode = !editMode;
+      document.getElementById("editModeBtn").textContent = editMode ? "Quitter édition" : "Mode édition";
+      afficherListe(currentNom);
+    };
+    document.getElementById("addItemBtn").onclick = () => {
+      const txt = prompt("Nouvel élément ?");
+      if (!txt) return;
+      listes[currentNom].push({ text: txt.trim(), checked: false });
+      saveChecklists();
+      afficherListe(currentNom);
+    };
+    document.getElementById("removeListBtn").onclick = () => {
+      if (confirm("Supprimer cette check-list ?")) {
+        delete listes[currentNom];
+        saveChecklists();
+        const noms = Object.keys(listes);
+        currentNom = noms[0] || "";
+        afficherListe(currentNom);
+      }
+    };
+    document.getElementById("uncheckAllBtn").onclick = () => {
+      listes[currentNom].forEach(i => i.checked = false);
+      saveChecklists();
+      afficherListe(currentNom);
+    };
+    document.getElementById("newChecklistBtn").onclick = () => {
+      const nom = prompt("Nom de la nouvelle liste ?");
+      if (!nom || listes[nom]) return;
+      listes[nom] = [];
+      saveChecklists();
+      afficherListe(nom);
+    };
+    document.getElementById("resetLists").onclick = () => {
+      if (confirm("⚠️ Ceci supprime toutes les check-lists personnalisées. Continuer ?")) {
+        localStorage.removeItem("checklists");
+        location.reload();
+      }
+    };
+    afficherListe(currentNom);
+
+    // ----------- BUDGET LOGIC -----------
+
+    function calculerChargesDepuisDepenses(depenses) {
+      if (!Array.isArray(depenses)) return 0;
+      let total = 0;
+      depenses.forEach(row => {
+        if (!row.ignore) {
+          const val = parseFloat(row.montant || "0");
+          if (!isNaN(val)) total += val;
+        }
+      });
+      return total;
+    }
+
+    function autoUpdateSituation(prefix) {
+      // Récupère les données depuis le localStorage
+      let salaire = parseFloat(localStorage.getItem(prefix + "_salaire") || "0") || 0;
+      let epargne = parseFloat(localStorage.getItem(prefix + "_epargne") || "0") || 0;
+
+      let depenses = JSON.parse(localStorage.getItem(prefix + "_depenses") || "[]");
+      let montantCharges = calculerChargesDepuisDepenses(depenses);
+
+      // Calculs auto
+      let restantApresCharge = salaire - montantCharges;
+      let frais = restantApresCharge - epargne;
+
+      // Mise à jour dans le formulaire
+      const chargesField = document.getElementById(prefix + "_charges");
+      if (chargesField) {
+        chargesField.value = montantCharges.toFixed(2);
+        chargesField.classList.add("auto-calc");
+      }
+      const restantField = document.getElementById(prefix + "_restant");
+      if (restantField) {
+        restantField.value = restantApresCharge.toFixed(2);
+        restantField.classList.add("auto-calc");
+      }
+      const fraisField = document.getElementById(prefix + "_frais");
+      if (fraisField) {
+        fraisField.value = frais.toFixed(2);
+        if (frais >= 0) {
+          fraisField.classList.add("frais-positif");
+          fraisField.classList.remove("frais-negatif");
+        } else {
+          fraisField.classList.remove("frais-positif");
+          fraisField.classList.add("frais-negatif");
+        }
+      }
+    }
+
+    function setupBudget(prefix) {
+      const wrapper = document.getElementById(prefix + "Content");
+      if (!wrapper) return;
+      const isEncours = () => document.getElementById(prefix + "EncoursBtn")?.classList.contains("active");
+      const fieldsSituation = [
+        { key: "salaire", label: "Salaire", editable: true },
+        { key: "restant", label: "Restant après charge", editable: false },
+        { key: "frais", label: "Somme frais divers", editable: false },
+        { key: "charges", label: "Montant charges", editable: false },
+        { key: "epargne", label: "Montant épargne", editable: true }
+      ];
+      const fieldsEncours = [
+        { key: "soldeBanque", label: "Solde Banque", editable: true },
+        { key: "encoursBanque", label: "En-cours banque", editable: true },
+        { key: "restant", label: "Restant après charge", editable: false },
+        { key: "frais", label: "Somme frais divers", editable: false },
+        { key: "charges", label: "Montant charges", editable: false },
+        { key: "epargnePossible", label: "Épargne possible", editable: true }
+      ];
+      const fieldsEpargne = [
+        { key: "livretDevDur", label: "Livret Développement Durable", editable: true },
+        { key: "livretA", label: "Livret A", editable: true },
+        { key: "boursorama", label: "Boursorama", editable: true }
+      ];
+      let epargnesPerso = JSON.parse(localStorage.getItem(prefix + "_epargnesPerso") || "[]");
+      let wishList = JSON.parse(localStorage.getItem(prefix + "_wishList") || "[]");
+
+      function saveEpargnesPerso() {
+        localStorage.setItem(prefix + "_epargnesPerso", JSON.stringify(epargnesPerso));
+      }
+      function saveWishList() {
+        localStorage.setItem(prefix + "_wishList", JSON.stringify(wishList));
+      }
+      function updateEpargneTotale() {
+        let sum = 0;
+        fieldsEpargne.forEach(f => {
+          const el = document.getElementById(prefix + "_" + f.key);
+          const v = el ? parseFloat(el.value) : 0;
+          sum += isNaN(v) ? 0 : v;
+        });
+        epargnesPerso.forEach((ep, i) => {
+          const el = document.getElementById(prefix + "_epargnePerso_montant_" + i);
+          const v = el ? parseFloat(el.value) : 0;
+          sum += isNaN(v) ? 0 : v;
+        });
+        const totalElem = document.getElementById(prefix + "_epargneTotale");
+        if (totalElem) {
+          totalElem.value = sum.toFixed(2);
+          updateEpargneColor(totalElem);
+        }
+        const previElem = document.getElementById(prefix + "_epargnePrevi");
+        let epPossible = 0;
+        if (prefix === "jri" || prefix === "ari") {
+          epPossible = parseFloat(localStorage.getItem(prefix + "_epargnePossible") || "0") || 0;
+        }
+        if (previElem) {
+          previElem.value = (sum + epPossible).toFixed(2);
+          updateEpargneColor(previElem);
+        }
+      }
+      function ajouterEpargnePerso(nom = "", montant = "") {
+        epargnesPerso.push({ nom, montant });
+        saveEpargnesPerso();
+      }
+      function renderEpargne() {
+        let html = `<button type="button" class="btnAddEpargne" id="btnAddEpargne">Ajouter une épargne</button>
+        <div class="budgetFieldsWrap">`;
+        fieldsEpargne.forEach(f => {
+          html += `<div class="budgetFieldRow">
+            <label>${f.label}</label>
+            <input type="number" id="${prefix}_${f.key}" value="${localStorage.getItem(prefix + "_" + f.key) || ""}" step="1" min="0" max="999999" autocomplete="off">
+            <span>€</span>
+          </div>`;
+        });
+        epargnesPerso.forEach((ep,i) => {
+          html += `<div class="budgetFieldRow epargne-ligne" data-index="${i}">
+            <input type="text" class="nom-epargne" id="${prefix}_epargnePerso_nom_${i}" value="${ep.nom || ''}" placeholder="Nom épargne" maxlength="32" autocomplete="off">
+            <input type="number" class="montant-epargne epargne-positif" id="${prefix}_epargnePerso_montant_${i}" value="${ep.montant || ''}" step="1" min="0" max="999999" autocomplete="off">
+            <button class="supprimer-epargne" title="Supprimer cette épargne">×</button>
+          </div>`;
+        });
+        html += `<hr>
+          <div class="budgetFieldRow">
+            <label>Épargne totale</label>
+            <input type="number" id="${prefix}_epargneTotale" readonly class="epargne-positif"><span>€</span>
+          </div>
+          <div class="budgetFieldRow">
+            <label>Épargne prévisionnelle</label>
+            <input type="number" id="${prefix}_epargnePrevi" readonly class="epargne-positif"><span>€</span>
+          </div>
+        </div>`;
+        return html;
+      }
+      function renderWishList() {
+        wishList = JSON.parse(localStorage.getItem(prefix + "_wishList") || "[]");
+        const total = wishList.reduce((acc, w) => acc + parseFloat(w.montant || 0), 0);
+        let html = `<div class="budgetFieldRow" style="margin-bottom:12px;">
+          <label><strong>Total wishes</strong></label>
+          <input type="number" readonly value="${total.toFixed(2)}"
+            style="background:#e2fbe4; color:#21854a; font-weight:bold; border:2px solid #40c97b; border-radius:6px; text-align:right; padding:6px 8px; max-width:110px;">
+          <span>€</span>
+        </div>
+        <div class="table-scroll-x">
+        <table class="depenseTable"><thead><tr>
+          <th class="wish-checkbox"></th>
+          <th class="wish-mois">Mois</th>
+          <th class="wish-montant">Montant (€)</th>
+          <th class="wish-descr">Description</th>
+          <th class="wish-domaine">Domaine</th>
+        </tr></thead><tbody>`;
+        wishList.forEach((item, i) => {
+          html += `<tr>
+            <td class="wish-checkbox"><input type="checkbox" class="wish-checked" data-index="${i}" ${item.checked ? "checked" : ""}></td>
+            <td class="wish-mois">
+              <select class="wish-mois" data-index="${i}">
+                ${[...Array(12)].map((_,n)=>`<option value="${n+1}" ${item.mois==n+1?"selected":""}>${n+1}</option>`).join("")}
+              </select>
+            </td>
+            <td class="wish-montant">
+              <input type="number" class="wish-montant" data-index="${i}" value="${item.montant || ''}" min="0" max="9999999" maxlength="7">
+            </td>
+            <td class="wish-descr">
+              <input type="text" class="wish-descr" data-index="${i}" value="${item.descr || ''}" maxlength="64">
+            </td>
+            <td class="wish-domaine">
+              <input type="text" class="wish-domaine" data-index="${i}" value="${item.domaine || ''}" maxlength="32">
+            </td>
+          </tr>`;
+        });
+        html += `</tbody></table>
+        </div>
+          <button class="ajout-wish">Ajouter un souhait</button>
+          <button class="save-wish">Enregistrer</button>`;
+        return html;
+      }
+      function renderDepenses(situ, rows, nbLines) {
+        let html = `<div class="table-scroll-x"><table class="depenseTable"><thead>
+          <tr>
+            <th></th>
+            <th>Date</th>
+            <th>Montant (€)</th>
+            <th>Description</th>
+          </tr></thead><tbody>`;
+        for (let i = 0; i < nbLines; i++) {
+          const d = rows[i] || { date: "", montant: "", desc: "", ignore: false };
+          html += `<tr>
+            <td><input type="checkbox" class="depense-ignore" ${d.ignore ? "checked" : ""}></td>
+            <td>
+              <select>
+                ${[""].concat([...Array(31)].map((_,n)=>n+1)).map(n => `<option${d.date==n?" selected":""}>${n}</option>`).join("")}
+              </select>
+            </td>
+            <td>
+              <input type="number" class="montant" min="0" max="9999999" maxlength="7" value="${d.montant || ""}">
+            </td>
+            <td>
+              <input type="text" value="${d.desc || ""}" maxlength="64" class="description">
+            </td>
+          </tr>`;
+        }
+        html += `</tbody></table></div>
+        <button class="ajout-depense">Ajouter une dépense</button>
+        <button class="save-depense">Enregistrer (Save)</button>`;
+        return html;
+      }
+      function render() {
+        const situ = !isEncours();
+        const epargneActive = document.getElementById(prefix + "EpargneBtn")?.classList.contains("active");
+        const wishActive = document.getElementById(prefix + "WishBtn")?.classList.contains("active");
+        if (epargneActive) {
+          wrapper.innerHTML = renderEpargne();
+          document.getElementById("btnAddEpargne").onclick = () => {
+            const nom = prompt("Nom de la nouvelle épargne ?");
+            if (!nom) return;
+            ajouterEpargnePerso(nom.trim(), "0");
+            render();
+          };
+          setTimeout(() => {
+            wrapper.querySelectorAll('input[type="number"],input[type="text"]').forEach(input => {
+              input.addEventListener("keydown", function(e) {
+                if(e.key === "Enter") { e.target.blur(); }
+              });
+              input.oninput = null;
+              input.onchange = function() {
+                ["livretDevDur","livretA","boursorama"].forEach(fkey => {
+                  const el = document.getElementById(prefix + "_" + fkey);
+                  if (el) localStorage.setItem(prefix + "_" + fkey, el.value);
+                });
+                epargnesPerso.forEach((ep, i) => {
+                  const nomEl = document.getElementById(prefix + "_epargnePerso_nom_" + i);
+                  const montEl = document.getElementById(prefix + "_epargnePerso_montant_" + i);
+                  if (nomEl && montEl) {
+                    epargnesPerso[i].nom = nomEl.value.trim();
+                    epargnesPerso[i].montant = montEl.value;
+                  }
+                });
+                localStorage.setItem(prefix + "_epargnesPerso", JSON.stringify(epargnesPerso));
+                render();
+              };
+            });
+            ["livretDevDur","livretA","boursorama"].forEach(fkey => {
+              const el = document.getElementById(prefix + "_" + fkey);
+              if (el) updateEpargneColor(el);
+            });
+            epargnesPerso.forEach((ep, i) => {
+              const montEl = document.getElementById(prefix + "_epargnePerso_montant_" + i);
+              if (montEl) updateEpargneColor(montEl);
+              const btnDel = document.getElementById(prefix + "_epargnePerso_nom_" + i)?.parentNode?.querySelector(".supprimer-epargne");
+              if (btnDel) btnDel.onclick = () => {
+                if (confirm(`Supprimer l'épargne "${epargnesPerso[i].nom}" ?`)) {
+                  epargnesPerso.splice(i, 1);
+                  localStorage.setItem(prefix + "_epargnesPerso", JSON.stringify(epargnesPerso));
+                  render();
+                }
+              };
+            });
+            updateEpargneTotale();
+          }, 0);
+          return;
+        }
+        if (wishActive) {
+          wrapper.innerHTML = renderWishList();
+          function updateWishFromFields() {
+            const list = [];
+            wrapper.querySelectorAll("tbody tr").forEach((row, i) => {
+              const item = {
+                checked: row.querySelector(".wish-checked").checked,
+                mois: row.querySelector(".wish-mois").value,
+                montant: row.querySelector(".wish-montant").value,
+                descr: row.querySelector(".wish-descr").value,
+                domaine: row.querySelector(".wish-domaine").value
+              };
+              list.push(item);
+            });
+            wishList = list;
+            saveWishList();
+            const total = wishList.reduce((acc, i) => acc + parseFloat(i.montant || 0), 0);
+            const totalEl = wrapper.querySelector('input[readonly]');
+            if (totalEl) totalEl.value = total.toFixed(2);
+          }
+          wrapper.querySelector(".ajout-wish").onclick = () => {
+            wishList.push({ checked: false, mois: "", montant: "", descr: "", domaine: "" });
+            saveWishList();
+            render();
+          };
+          wrapper.querySelector(".save-wish").onclick = () => {
+            updateWishFromFields();
+            alert("✅ Wish list enregistrée !");
+          };
+          wrapper.querySelectorAll("input[type='text'],input[type='number']").forEach(input => {
+            input.addEventListener("keydown", function(e) {
+              if(e.key === "Enter") { e.target.blur(); }
+            });
+            input.onchange = updateWishFromFields;
+          });
+          wrapper.querySelectorAll("select").forEach(select => {
+            select.onchange = updateWishFromFields;
+          });
+          updateWishFromFields();
+          return;
+        }
+        // Section Situation ou En cours
+        const currentFields = situ ? fieldsSituation : fieldsEncours;
+        const depKey = prefix + "_" + (situ ? "depenses" : "encours_depenses");
+        const linesKey = depKey + "_lines";
+        let rows = JSON.parse(localStorage.getItem(depKey) || "[]");
+        let nbLines = Math.max(rows.length, parseInt(localStorage.getItem(linesKey) || "5"));
+        let html = `<div class="budgetFieldsWrap">`;
+        currentFields.forEach(f => {
+          let v = localStorage.getItem(prefix + "_" + f.key) || "";
+          let readonly = (!f.editable || (!situ && f.key === "frais")) ? "readonly" : "";
+          let classe = "";
+          // Calculs automatiques pour Situation Fin.
+          if (situ) {
+            if (f.key === "charges" || f.key === "restant" || f.key === "frais") {
+              readonly = "readonly";
+              classe = "auto-calc";
+            }
+            if (f.key === "frais") {
+              classe = "";
+              // La coloration sera faite dans autoUpdateSituation
+            }
+          }
+          html += `<div class="budgetFieldRow">
+            <label>${f.label}</label>
+            <input id="${prefix}_${f.key}" type="number" value="${v}" class="${classe}" ${readonly} autocomplete="off">
+            <span>€</span></div>`;
+        });
+        html += `</div><hr><h4>Dépenses</h4>`;
+        html += renderDepenses(situ, rows, nbLines);
+        if (!situ) {
+          html += `<button class="btn-sync">📥 Copier les dépenses de Situation Fin.</button>`;
+        }
+        wrapper.innerHTML = html;
+
+        // Gestion focus et validation des champs principaux
+        wrapper.querySelectorAll(".budgetFieldRow input[type='number'], .budgetFieldRow input[type='text']").forEach(input => {
+          input.addEventListener("keydown", function(e) {
+            if(e.key === "Enter") { e.target.blur(); }
+          });
+          input.onchange = function() {
+            currentFields.forEach(f => {
+              const el = document.getElementById(prefix + "_" + f.key);
+              if (el && f.editable) localStorage.setItem(prefix + "_" + f.key, el.value);
+            });
+            render();
+          };
+        });
+
+        // Coloration automatique
+        autoUpdateSituation(prefix);
+
+        // Gestion du tableau des dépenses
+        wrapper.querySelectorAll("tbody tr").forEach((row, i) => {
+          row.querySelectorAll("input,select").forEach(el => {
+            if (el.tagName === "INPUT" && (el.type === "text" || el.type === "number")) {
+              el.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                  e.target.blur();
+                }
+              });
+              el.onchange = () => {
+                rows[i] = {
+                  ignore: row.querySelector(".depense-ignore")?.checked ?? false,
+                  date: row.querySelector("select").value,
+                  montant: row.querySelector(".montant").value,
+                  desc: row.querySelector(".description").value
+                };
+                localStorage.setItem(depKey, JSON.stringify(rows));
+                render();
+              };
+            } else {
+              el.onchange = () => {
+                rows[i] = {
+                  ignore: row.querySelector(".depense-ignore")?.checked ?? false,
+                  date: row.querySelector("select").value,
+                  montant: row.querySelector(".montant").value,
+                  desc: row.querySelector(".description").value
+                };
+                localStorage.setItem(depKey, JSON.stringify(rows));
+                render();
+              };
+            }
+          });
+        });
+        wrapper.querySelector(".ajout-depense").onclick = () => {
+          nbLines++;
+          localStorage.setItem(linesKey, nbLines.toString());
+          render();
+        };
+        wrapper.querySelector(".save-depense").onclick = () => {
+          alert("✅ Dépenses enregistrées !");
+        };
+        const sync = wrapper.querySelector(".btn-sync");
+        if (sync) {
+          sync.onclick = () => {
+            const ref = JSON.parse(localStorage.getItem(prefix + "_depenses") || "[]");
+            localStorage.setItem(prefix + "_encours_depenses", JSON.stringify(ref));
+            localStorage.setItem(prefix + "_encours_depenses_lines", ref.length.toString());
+            alert("✅ Copié depuis Situation Fin.");
+            render();
+          };
+        }
+      }
+      ["SituBtn","EncoursBtn","EpargneBtn","WishBtn"].forEach(suffix => {
+        const btn = document.getElementById(prefix + suffix);
+        if (btn) {
+          btn.onclick = () => {
+            ["SituBtn","EncoursBtn","EpargneBtn","WishBtn"].forEach(k => {
+              const el = document.getElementById(prefix + k);
+              if (el) el.classList.remove("active");
+            });
+            btn.classList.add("active");
+            render();
+          };
+        }
+      });
+      render();
+    }
+
+    function updateEpargneColor(input) {
+      if (!input) return;
+      const v = parseFloat(input.value);
+      if (isNaN(v) || v >= 0) {
+        input.classList.add("epargne-positif");
+        input.classList.remove("epargne-negatif");
+      } else {
+        input.classList.remove("epargne-positif");
+        input.classList.add("epargne-negatif");
+      }
+    }
+
+    // Onglets budget principal
+    document.getElementById("btnJRI").onclick = () => {
+      document.getElementById("budgetSectionJRI").style.display = "";
+      document.getElementById("budgetSectionARI").style.display = "none";
+      document.getElementById("btnJRI").classList.add("active");
+      document.getElementById("btnARI").classList.remove("active");
+    };
+    document.getElementById("btnARI").onclick = () => {
+      document.getElementById("budgetSectionARI").style.display = "";
+      document.getElementById("budgetSectionJRI").style.display = "none";
+      document.getElementById("btnARI").classList.add("active");
+      document.getElementById("btnJRI").classList.remove("active");
+    };
+    ["SituBtn", "EncoursBtn", "EpargneBtn", "WishBtn"].forEach(suffix => {
+      const btn = document.getElementById("jri" + suffix);
+      if (btn) {
+        btn.onclick = () => {
+          ["SituBtn", "EncoursBtn", "EpargneBtn", "WishBtn"].forEach(k => {
+            const el = document.getElementById("jri" + k);
+            if (el) el.classList.remove("active");
+          });
+          btn.classList.add("active");
+          setupBudget("jri");
+        };
+      }
+    });
+    ["SituBtn", "EncoursBtn", "EpargneBtn", "WishBtn"].forEach(suffix => {
+      const btn = document.getElementById("ari" + suffix);
+      if (btn) {
+        btn.onclick = () => {
+          ["SituBtn", "EncoursBtn", "EpargneBtn", "WishBtn"].forEach(k => {
+            const el = document.getElementById("ari" + k);
+            if (el) el.classList.remove("active");
+          });
+          btn.classList.add("active");
+          setupBudget("ari");
+        };
+      }
+    });
+    // Bloc Notes
+    const notes = document.getElementById("notes");
+    notes.value = localStorage.getItem("notes") || "";
+    notes.oninput = () => localStorage.setItem("notes", notes.value);
+
+    // Initialisation
+    showTab(0);
+    setupBudget("jri");
+    setupBudget("ari");
+  </script>
+</body>
+</html>
